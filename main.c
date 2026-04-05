@@ -59,30 +59,29 @@ Registro* inserirReg(Registro* no, int chave, char* nome, float valor) {
 }
 
 
-Registro* arquivoToArvore(char* nome, Registro* no, int qtd) {
+Registro* arquivoToArvore(char* nome, Registro* no) {
     FILE *file = fopen(nome, "r");
 
     if (file == NULL) {
         printf("Erro na abertura do arquivo\n");
-        return 0;
-    }
-    for (int i = 0; i < qtd; i++) {
-        int chave;
-        char nomereg[100];
-        float valor;
-        fscanf(file, "%d;%[^;];%f", &chave, nomereg, &valor);
-        no = inserirReg(no, chave, nomereg, valor);
+        return NULL;
     }
 
+    int chave;
+    char nomereg[100];
+    float valor;
+
+    while (fscanf(file, "%d;%[^;];%f\n", &chave, nomereg, &valor) == 3) {
+        no = inserirReg(no, chave, nomereg, valor);
+    }
 
     fclose(file);
     return no;
 }
 
 
-
 //Retorna a quantidade de linhas do arquivo txt
-int retornaQtd(char *nome) {
+int retornaQtdRegistros(char *nome) {
     FILE *file = fopen(nome, "r");
     if (file == NULL) {
         printf("Erro na abertura do arquivo\n");
@@ -91,13 +90,8 @@ int retornaQtd(char *nome) {
     int qtd = 0;
     char c;
     qtd++;
-    while (!feof(file)) {
-        c = fgetc(file);
-        if (c == '\n') {
-            qtd++;
-
-        }
-
+    while ((c = fgetc(file)) != EOF) {
+        if (c == '\n') qtd++;
     }
     fclose(file);
     return qtd;
@@ -110,10 +104,9 @@ int main(void) {
     Registro *no;
     no = NULL;
     char nome[50] = "input.txt";
-    int qtd = retornaQtd(nome);
 
-    no = arquivoToArvore(nome,no,qtd);
-    buscaReg(no, 30);
+    no = arquivoToArvore(nome,no);
+    buscaReg(no, 1293144);
 
     liberarArvore(no);
     return 0;
