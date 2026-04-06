@@ -24,10 +24,24 @@ void liberarArvore(Registro* no) {
     free(no);
 }
 
+int getAltura(Registro *raiz) {
+    if (raiz == NULL) {
+        return -1; // Convenção: árvore vazia tem altura -1
+    } else {
+        int esq = getAltura(raiz->esq);
+        int dir = getAltura(raiz->dir);
+
+        if (esq > dir)
+            return esq + 1;
+        else
+            return dir + 1;
+    }
+}
+
 Registro* buscaReg(Registro* no, int chave) {
     while (no != NULL) {
         if (no->chave == chave) {
-            printf("\nAchou o registro de indice %d : %s \n",chave,no->nome);
+            printf("\nAchou o registro de indice %d : %s \nSalario : %.2f\n",chave,no->nome,no->valor);
             return no;
         }else if (no->chave > chave) {
             no = no->esq;
@@ -119,6 +133,7 @@ int main(void) {
     int id;
     //Criação da árvore (desbalanceada)
     no = arquivoToArvore(nome,no);
+    printf("\n%d\n", getAltura(no));
     //Criando o vetor ordenado das chaves da árvore
     int qtd = contaNos(no);
     printf("\n%d\n",qtd);
@@ -127,7 +142,7 @@ int main(void) {
     inorder(no, elementos, &i);
     //Ordenando a árvore
     no = constroiBalanceada(elementos, 0, qtd - 1);
-    
+    printf("\n%d\n", getAltura(no));
     free(elementos);
 
 
