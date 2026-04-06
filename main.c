@@ -35,6 +35,7 @@ Registro* buscaReg(Registro* no, int chave) {
             no = no->dir;
         }
     }
+    printf("Registro nao encontrado");
     return NULL;
 }
 
@@ -52,7 +53,7 @@ Registro* inserirReg(Registro* no, int chave, char* nome, float valor) {
     }else if (no->chave < chave) {
         no->dir = inserirReg(no->dir, chave, nome, valor);
     }else {
-        printf("\nInserção Inválida!\n");
+        printf("\nInsercao Inválida!\n");
 
     }
     return no;
@@ -79,24 +80,34 @@ Registro* arquivoToArvore(char* nome, Registro* no) {
     return no;
 }
 
+Registro* constroiBalanceada(Registro** elementos, int inicio, int fim) {
+    if (inicio > fim) return NULL;
 
-//Retorna a quantidade de linhas do arquivo txt
-int retornaQtdRegistros(char *nome) {
-    FILE *file = fopen(nome, "r");
-    if (file == NULL) {
-        printf("Erro na abertura do arquivo\n");
-        return 0;
+    int meio = (inicio + fim) / 2;
+    Registro* noNovo = elementos[meio];
+
+    if (noNovo != NULL) {
+        noNovo->esq = constroiBalanceada(elementos, inicio, meio - 1);
+        noNovo->dir = constroiBalanceada(elementos, meio + 1, fim);
     }
-    int qtd = 0;
-    char c;
-    qtd++;
-    while ((c = fgetc(file)) != EOF) {
-        if (c == '\n') qtd++;
-    }
-    fclose(file);
-    return qtd;
+
+    return noNovo;
+}
+//Preenche o vetor "elementos" com os endereços de memória da árvore ORDENADA
+void inorder(Registro* no, Registro** elementos, int* i) {
+    if (no == NULL) return;
+    inorder(no->esq, elementos, i);
+    elementos[*i] = no;
+    (*i)++;
+    inorder(no->dir, elementos, i);
 }
 
+
+//Retorna a quantidade de linhas do arquivo txt
+int contaNos(Registro* no) {
+    if (no == NULL) return 0;
+    return 1 + contaNos(no->esq) + contaNos(no->dir);
+}
 
 
 int main(void) {
@@ -104,9 +115,31 @@ int main(void) {
     Registro *no;
     no = NULL;
     char nome[50] = "input.txt";
-
+    char confirm = 's';
+    int id;
+    //Criação da árvore (desbalanceada)
     no = arquivoToArvore(nome,no);
-    buscaReg(no, 1293144);
+    //Criando o vetor ordenado das chaves da árvore
+    int qtd = contaNos(no);
+    printf("\n%d\n",qtd);
+    Registro** elementos = malloc(qtd * sizeof(Registro*));
+    int i = 0;
+    inorder(no, elementos, &i);
+    //Ordenando a árvore
+    no = constroiBalanceada(elementos, 0, qtd - 1);
+    
+    free(elementos);
+
+
+
+    while (confirm != 'n') {
+        printf("\nDigite um id para buscar:\n");
+        scanf("%d", &id);
+        buscaReg(no, id);
+        printf("\nDeseja continuar a buscar? (aperte n para sair):\n");
+        scanf(" %c", &confirm);
+    }
+
 
     liberarArvore(no);
     return 0;
